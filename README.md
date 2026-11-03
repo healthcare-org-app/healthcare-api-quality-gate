@@ -4,7 +4,7 @@ The API quality gate of the healthcare-org-app platform. Each service (about 105
 
 It reads only the service's Postman project (spec, collection, workspace): never the application code or its language. It is built on the Postman CLI (lint, mock, collection run, AI readiness, skills check), the Postman plugin skills committed in each service, and the Postman Context Graph for the list of known consumers.
 
-Owner: healthcare-org-app platform team. Status: 0.6.3, distributed from this repository (no npm publish). Node 22, one runtime dependency (`yaml`), Postman CLI 1.76.0.
+Owner: healthcare-org-app platform team. Status: 0.6.4, distributed from this repository (no npm publish). Node 22, one runtime dependency (`yaml`), Postman CLI 1.76.0.
 
 ## Services using it
 

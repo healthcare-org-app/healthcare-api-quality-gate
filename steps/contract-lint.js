@@ -87,9 +87,19 @@ function parseLint(stdout, specPath, command, exceptions = [], opts = {}) {
 /** Pure: did the CLI refuse because there is no login? */
 const needsLogin = (r) => /requires you to be logged in/i.test(`${r.stdout}\n${r.stderr}`);
 
+/** Pure: did the CLI lint without the governance rules (no permission on the rulesets)? It then prints a notice before the JSON. */
+const governanceSkipped = (stdout) => /^Governance rules were not applied/m.test(stdout || '');
+
+/** Pure: the JSON document of the stdout, without a notice line printed before it. */
+const jsonPart = (stdout) => {
+  const m = /^\{/m.exec(String(stdout || ''));
+  return m && m.index > 0 ? stdout.slice(m.index) : stdout;
+};
+
 module.exports = {
   id,
   needsLogin,
+  governanceSkipped,
   supports: ['openapi-3'],
   needsSpec: true,
   needsCli: true,
@@ -111,6 +121,15 @@ module.exports = {
         res.degraded = 'governance rules skipped: not logged in to Postman (syntax rules only)';
         res.summary += ' (syntax rules only: not logged in to Postman, governance rules skipped)';
         applyDegraded(res); // never a pass; a syntax error stays a fail
+      }
+      return res;
+    }
+    if (governanceSkipped(r.stdout)) {
+      const res = parseLint(jsonPart(r.stdout), ctx.spec.path, command, exceptions, { checkStale: false });
+      if (res.status !== 'not_available') {
+        res.degraded = 'governance rules skipped: no permission on the governance rulesets (syntax rules only)';
+        res.summary += ' (syntax rules only: no permission on the governance rulesets)';
+        applyDegraded(res);
       }
       return res;
     }

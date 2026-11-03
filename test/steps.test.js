@@ -347,3 +347,12 @@ test('contract-lint exceptions: run() reads them from ctx.config', () => {
     exec: fakeExec(() => ({ stdout: JSON.stringify({ violations: [TRAILING.violations[0]] }), status: 1 })) };
   assert.equal(lint.run(ctx).status, 'pass');
 });
+
+test('contract-lint: a governance permission notice before the JSON is parsed and degraded, not "no JSON output"', () => {
+  const notice = 'Governance rules were not applied: Unable to resolve governance rulesets: Authorization failed | details: {"error":{"status":403}}\n';
+  const exec = fakeExec(() => ({ stdout: `${notice}{\n  "violations": []\n}\n`, status: 0 }));
+  const r = lint.run({ cwd: '.', exec, env: {}, spec: { path: 'specs/pets.yaml' } });
+  assert.equal(r.status, 'warn');
+  assert.match(r.summary, /no permission on the governance rulesets/);
+  assert.ok(r.degraded);
+});
